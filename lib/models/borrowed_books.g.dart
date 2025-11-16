@@ -22,17 +22,21 @@ class BorrowedBooksAdapter extends TypeAdapter<BorrowedBooks> {
       author: fields[2] as String,
       borrowedDate: fields[7] as DateTime?,
       returnDate: fields[8] as DateTime?,
+      finePerDay: fields[9] as double,
       rating: fields[4] as String?,
       pages: fields[5] as String?,
       publishYear: fields[6] as String?,
-      cover_i: fields[3] as String?,
+      cover_i: fields[3] as int?,
+      description: fields[10] as String?,
+      borrowerName: fields[11] as String?,
+      customImagePath: fields[12] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, BorrowedBooks obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.upc)
       ..writeByte(1)
@@ -50,7 +54,15 @@ class BorrowedBooksAdapter extends TypeAdapter<BorrowedBooks> {
       ..writeByte(7)
       ..write(obj.borrowedDate)
       ..writeByte(8)
-      ..write(obj.returnDate);
+      ..write(obj.returnDate)
+      ..writeByte(9)
+      ..write(obj.finePerDay)
+      ..writeByte(10)
+      ..write(obj.description)
+      ..writeByte(11)
+      ..write(obj.borrowerName)
+      ..writeByte(12)
+      ..write(obj.customImagePath);
   }
 
   @override

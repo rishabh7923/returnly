@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:libraryapp/models/borrowed_books.dart';
 import 'package:libraryapp/screens/home/widgets/attribute_chip.dart';
@@ -11,6 +13,14 @@ class BookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final rawProgress = book.calculateReturnProgress();
+    double progress = 1.0; // Default to full bar if no data
+
+    if (rawProgress is num) {
+      final elapsed = rawProgress.toDouble();
+      progress = elapsed;
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: Padding(
@@ -19,24 +29,30 @@ class BookCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            book.cover_i != null
-                ? ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: Image.network(
-                    'https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg',
-                    height: 130,
-                    width: 90,
-                    fit: BoxFit.cover,
-                    errorBuilder:
-                        (ctx, err, _) => Container(
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: book.customImagePath != null
+                  ? Image.file(
+                      File(book.customImagePath!),
+                      height: 130,
+                      width: 90,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => 
+                          const BookCoverPlaceholder(height: 130, width: 90),
+                    )
+                  : (book.cover_i != null)
+                      ? CachedNetworkImage(
+                          imageUrl:
+                              'https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg',
                           height: 130,
                           width: 90,
-                          color: Colors.grey[500],
-                          child: const Icon(Icons.broken_image),
-                        ),
-                  ),
-                )
-                : BookCoverPlaceholder(height: 130, width: 90),
+                          fit: BoxFit.cover,
+                          errorWidget:
+                              (context, url, error) =>
+                                  const BookCoverPlaceholder(height: 130, width: 90),
+                        )
+                      : const BookCoverPlaceholder(height: 130, width: 90),
+            ),
 
             const SizedBox(width: 20),
 
@@ -52,7 +68,7 @@ class BookCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          book.title ?? 'Unknown Title',
+                          book.title,
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -61,10 +77,11 @@ class BookCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          book.author ?? 'Unknown Author',
-                          style: const TextStyle(
-                            fontSize: 10,
+                          book.author,
+                          style: TextStyle(
+                            fontSize: 12,
                             color: Colors.grey,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
 
@@ -75,35 +92,59 @@ class BookCard extends StatelessWidget {
                     Column(
                       spacing: 10,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            AttributeChip(
-                              attribute: book.rating ?? 'N/A',
-                              icon: Icons.star,
-                            ),
-                            AttributeChip(
-                              attribute: book.pages ?? 'N/A',
-                              icon: Icons.pages,
-                            ),
-                            AttributeChip(
-                              attribute: book.publishYear ?? 'N/A',
-                              icon: Icons.publish_rounded,
-                            ),
-                            AttributeChip(
-                              attribute: book.timeLeftBeforeReturn(),
-                              icon: Icons.access_time,
-                            ),
-                          ],
-                        ),
+                        Builder(
+                          builder: (context) {
+                            final now = DateTime.now();
+                            final daysLate =
+                                (book.returnDate != null &&
+                                        now.isAfter(book.returnDate!))
+                                    ? now.difference(book.returnDate!).inDays
+                                    : 0;
+                            final fineAmount = daysLate * book.finePerDay;
 
-                        LinearProgressIndicator(
-                          minHeight: 5,
-                          value: book.calculateReturnProgress(),
-                          backgroundColor: Colors.grey[200],
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Colors.green,
-                          ),
+                            return Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    AttributeChip(
+                                      attribute: book.rating ?? 'N/A',
+                                      icon: Icons.star,
+                                    ),
+                                    AttributeChip(
+                                      attribute: book.pages ?? 'N/A',
+                                      icon: Icons.pages,
+                                    ),
+                                    AttributeChip(
+                                      attribute: book.publishYear ?? 'N/A',
+                                      icon: Icons.publish_rounded,
+                                    ),
+                                    AttributeChip(
+                                      attribute: book.timeLeftBeforeReturn(),
+                                      icon: Icons.access_time,
+                                    ),
+                                    if (daysLate > 0)
+                                      AttributeChip(
+                                        attribute:
+                                            '${fineAmount.toStringAsFixed(2)}',
+                                        icon: Icons.payments,
+                                      ),
+                                  ],
+                                ),
+                                SizedBox(height: 5),
+                                LinearProgressIndicator(
+                                  minHeight: 5,
+                                  value: progress,
+                                  backgroundColor: Colors.grey[300],
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.grey,
+                                  ),
+                                  borderRadius: BorderRadius.circular(2.5),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),

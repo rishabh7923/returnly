@@ -13,7 +13,7 @@ class BorrowedBooks {
   String author;
   
   @HiveField(3)
-  String? cover_i;
+  int? cover_i;
 
   @HiveField(4)
   String? rating;
@@ -29,6 +29,18 @@ class BorrowedBooks {
   
   @HiveField(8)
   DateTime? returnDate;
+  
+  @HiveField(9)
+  double finePerDay;
+
+  @HiveField(10)
+  String? description;
+
+  @HiveField(11)
+  String? borrowerName;
+
+  @HiveField(12)
+  String? customImagePath;
 
   BorrowedBooks({
     required this.upc,
@@ -36,10 +48,14 @@ class BorrowedBooks {
     required this.author,
     required this.borrowedDate,
     required this.returnDate,
+    this.finePerDay = 0.0,
     this.rating,
     this.pages,
     this.publishYear,
     this.cover_i,
+    this.description,
+    this.borrowerName,
+    this.customImagePath,
   });
 
   String timeLeftBeforeReturn() {
@@ -54,14 +70,22 @@ class BorrowedBooks {
   }
 
   calculateReturnProgress() {
-    final now = DateTime.now();
-    final totalDuration = returnDate?.difference(borrowedDate!);
-    final elapsedDuration = now.difference(borrowedDate!);
-
-    if (totalDuration == null || totalDuration.inSeconds <= 0) {
+    // Handle null cases
+    if (borrowedDate == null || returnDate == null) {
       return 0.0;
     }
 
-    return elapsedDuration.inSeconds / totalDuration.inSeconds;
+    final now = DateTime.now();
+    final totalDuration = returnDate!.difference(borrowedDate!);
+    final elapsedDuration = now.difference(borrowedDate!);
+
+    // Handle invalid duration
+    if (totalDuration.inSeconds <= 0) {
+      return 0.0;
+    }
+
+    // Calculate and clamp between 0.0 and 1.0
+    final progress = elapsedDuration.inSeconds / totalDuration.inSeconds;
+    return progress.clamp(0.0, 1.0);
   }
 }

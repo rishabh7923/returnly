@@ -6,6 +6,7 @@ class OpenLibraryItem {
   String? rating;
   String? pages;
   String? publishYear;
+  String? description;
 
   OpenLibraryItem({
     required this.title,
@@ -14,6 +15,7 @@ class OpenLibraryItem {
     this.rating,
     this.pages,
     this.publishYear,
+    this.description,
   });
 
   OpenLibraryItem.fromJson(Map<String, dynamic> json)
@@ -24,7 +26,10 @@ class OpenLibraryItem {
             : null,
         cover_i = json['docs'][0]['cover_i'],
         pages = json['docs'][0]['number_of_pages_median']?.toString(),
-        publishYear = json['docs'][0]['first_publish_year']?.toString();
+        publishYear = json['docs'][0]['first_publish_year']?.toString(),
+        description = json['docs'][0]['first_sentence'] != null && json['docs'][0]['first_sentence'].isNotEmpty
+            ? json['docs'][0]['first_sentence'][0]
+            : null;
 
   Map<String, dynamic> toJson() {
     return {
@@ -34,6 +39,7 @@ class OpenLibraryItem {
       'pages': pages,
       'publish_year': publishYear,
       'cover_i': cover_i,
+      'description': description,
     };
   }
 }

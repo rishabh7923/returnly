@@ -15,11 +15,19 @@ class BookCoverPlaceholder extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
-        color: Colors.grey[300],
+        color: Colors.grey[200],
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       height: height,
       width: width,
-      child: const Icon(Icons.broken_image),
+      child: const Icon(
+        Icons.menu_book_rounded,
+        color: Colors.grey,
+        size: 40,
+      ),
       
     );
   }
