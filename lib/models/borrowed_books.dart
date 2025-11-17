@@ -34,7 +34,7 @@ class BorrowedBooks {
   double finePerDay;
 
   @HiveField(10)
-  String? description;
+  String? notes;
 
   @HiveField(11)
   String? borrowerName;
@@ -53,7 +53,7 @@ class BorrowedBooks {
     this.pages,
     this.publishYear,
     this.cover_i,
-    this.description,
+    this.notes,
     this.borrowerName,
     this.customImagePath,
   });
@@ -61,7 +61,20 @@ class BorrowedBooks {
   String timeLeftBeforeReturn() {
     final now = DateTime.now();
     final difference = returnDate?.difference(now);
-    if (difference == null) return "0D 0H";
+    if (difference == null) return "0D 0H 0M 0S";
+
+    final days = difference.inDays;
+    final hours = difference.inHours.remainder(24);
+    final minutes = difference.inMinutes.remainder(60);
+    final seconds = difference.inSeconds.remainder(60);
+    
+    return "${days}D ${hours}H ${minutes}M ${seconds}S";
+  }
+
+  String timeLeftShort() {
+    final now = DateTime.now();
+    final difference = returnDate?.difference(now);
+    if (difference == null) return "0D";
 
     final days = difference.inDays;
     final hours = difference.inHours.remainder(24);

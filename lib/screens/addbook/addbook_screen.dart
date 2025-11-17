@@ -39,7 +39,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
   final authorController = TextEditingController();
   final upcController = TextEditingController();
   final borrowerController = TextEditingController();
-  final descriptionController = TextEditingController();
+  final notesController = TextEditingController();
   final borrowedDateController = TextEditingController();
   final returnDateController = TextEditingController();
   final ratingController = TextEditingController();
@@ -67,7 +67,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
       titleController.text = book.title;
       authorController.text = book.author;
       borrowerController.text = book.borrowerName ?? '';
-      descriptionController.text = book.description ?? '';
+      notesController.text = book.notes ?? '';
       ratingController.text = book.rating ?? '';
       pagesController.text = book.pages ?? '';
       publishYearController.text = book.publishYear ?? '';
@@ -114,7 +114,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
           returnDateController.text =
               '${defaultReturnDate.day}/${defaultReturnDate.month}/${defaultReturnDate.year}';
 
-          descriptionController.text = bookDetails?.description ?? '';
+          notesController.text = bookDetails?.description ?? '';
 
           isLoading = false;
         });
@@ -133,7 +133,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
     authorController.dispose();
     upcController.dispose();
     borrowerController.dispose();
-    descriptionController.dispose();
+    notesController.dispose();
     borrowedDateController.dispose();
     returnDateController.dispose();
     ratingController.dispose();
@@ -617,7 +617,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                             _buildSectionHeader('Notes'),
                             const SizedBox(height: 10),
                             TextField(
-                              controller: descriptionController,
+                              controller: notesController,
                               decoration: _buildInputDecoration(
                                 'Additional notes',
                                 hint: 'Any additional information about the book',
@@ -684,7 +684,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                   book.rating = ratingController.text.isNotEmpty ? ratingController.text : null;
                                   book.pages = pagesController.text.isNotEmpty ? pagesController.text : null;
                                   book.publishYear = publishYearController.text.isNotEmpty ? publishYearController.text : null;
-                                  book.description = descriptionController.text;
+                                  book.notes = notesController.text;
                                   book.borrowerName = borrowerController.text.isNotEmpty ? borrowerController.text : null;
                                   book.customImagePath = customImagePath;
                                   
@@ -709,7 +709,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                       borrowedDate: borrowedDate ?? DateTime.now(),
                                       returnDate: returnDate,
                                       finePerDay: parsedFine,
-                                      description: descriptionController.text.isNotEmpty ? descriptionController.text : bookDetails?.description,
+                                      notes: notesController.text.isNotEmpty ? notesController.text : bookDetails?.description,
                                       borrowerName: borrowerController.text.isNotEmpty ? borrowerController.text : null,
                                       customImagePath: customImagePath,
                                     ),

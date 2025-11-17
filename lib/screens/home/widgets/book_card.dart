@@ -121,7 +121,7 @@ class BookCard extends StatelessWidget {
                                       icon: Icons.publish_rounded,
                                     ),
                                     AttributeChip(
-                                      attribute: book.timeLeftBeforeReturn(),
+                                      attribute: book.timeLeftShort(),
                                       icon: Icons.access_time,
                                     ),
                                     if (daysLate > 0)

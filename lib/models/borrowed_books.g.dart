@@ -27,7 +27,7 @@ class BorrowedBooksAdapter extends TypeAdapter<BorrowedBooks> {
       pages: fields[5] as String?,
       publishYear: fields[6] as String?,
       cover_i: fields[3] as int?,
-      description: fields[10] as String?,
+      notes: fields[10] as String?,
       borrowerName: fields[11] as String?,
       customImagePath: fields[12] as String?,
     );
@@ -58,7 +58,7 @@ class BorrowedBooksAdapter extends TypeAdapter<BorrowedBooks> {
       ..writeByte(9)
       ..write(obj.finePerDay)
       ..writeByte(10)
-      ..write(obj.description)
+      ..write(obj.notes)
       ..writeByte(11)
       ..write(obj.borrowerName)
       ..writeByte(12)
