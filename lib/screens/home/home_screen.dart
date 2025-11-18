@@ -42,20 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Container(
-              height: 1,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).primaryColor.withOpacity(0.5),
-                    Theme.of(context).primaryColor.withOpacity(0.1),
-                  ],
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -238,32 +224,11 @@ class _HomeScreenState extends State<HomeScreen> {
               // All Books Section Header
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(child: _buildSectionHeader('Recently Added')),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AllBooksScreen(),
-                            ),
-                          );
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        ),
-                        child: Text(
-                          'View All',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -272,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Recently Added Books Horizontal List
               SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 240,
+                  height: 200,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -283,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       final key = entry['key'];
 
                       return Padding(
-                        padding: const EdgeInsets.only(right: 16),
+                        padding: const EdgeInsets.only(right: 5),
                         child: CompactBookCard(
                           book: book,
                           onTap: () {
