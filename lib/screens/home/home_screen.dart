@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:libraryapp/models/borrowed_books.dart';
 import 'package:libraryapp/screens/home/widgets/book_card.dart';
+import 'package:libraryapp/screens/home/widgets/compact_book_card.dart';
 import 'package:libraryapp/screens/home/widgets/due_this_week_card.dart';
+import 'package:libraryapp/screens/home/all_books_screen.dart';
 import 'package:libraryapp/screens/scan/scan_screen.dart';
 import 'package:libraryapp/screens/book/book_detail_screen.dart';
 
@@ -137,7 +139,44 @@ class _HomeScreenState extends State<HomeScreen> {
             
           return CustomScrollView(
             slivers: [
-                            // Due This Week Section (with overdue alert)
+              // Greeting Header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Hello, Rishabh Yadav',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[800],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            '👋',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Good to have you back!',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Due This Week Section (with overdue alert)
               SliverToBoxAdapter(
                 child: DueThisWeekSection(
                   bookEntries: bookEntries,
@@ -148,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Calendar Heatmap Section
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
                   child: Card(
                     elevation: 1,
                     shape: RoundedRectangleBorder(
@@ -200,34 +239,70 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  child: _buildSectionHeader('All Books'),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: _buildSectionHeader('Recently Added')),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AllBooksScreen(),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        child: Text(
+                          'View All',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
-              // All Books List
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final entry = bookEntries[index];
-                    final book = entry['book'] as BorrowedBooks;
-                    final key = entry['key'];
-                    
-                    return BookCard(
-                      book: book,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                BookDetailScreen(book: book, bookKey: key),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  childCount: books.length,
+              // Recently Added Books Horizontal List
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 240,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: bookEntries.length > 5 ? 5 : bookEntries.length,
+                    itemBuilder: (context, index) {
+                      final entry = bookEntries[index];
+                      final book = entry['book'] as BorrowedBooks;
+                      final key = entry['key'];
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: CompactBookCard(
+                          book: book,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    BookDetailScreen(book: book, bookKey: key),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
             ],
           );
         },

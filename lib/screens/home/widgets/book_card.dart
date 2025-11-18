@@ -21,12 +21,18 @@ class BookCard extends StatelessWidget {
       progress = elapsed;
     }
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-
-        child: Row(
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade300, width: 1),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
@@ -153,6 +159,7 @@ class BookCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
