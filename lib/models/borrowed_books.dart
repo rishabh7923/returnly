@@ -42,6 +42,9 @@ class BorrowedBooks {
   @HiveField(12)
   String? customImagePath;
 
+  @HiveField(13)
+  bool isReturned;
+
   BorrowedBooks({
     required this.upc,
     required this.title,
@@ -56,6 +59,7 @@ class BorrowedBooks {
     this.notes,
     this.borrowerName,
     this.customImagePath,
+    this.isReturned = false,
   });
 
   String timeLeftBeforeReturn() {
@@ -82,23 +86,17 @@ class BorrowedBooks {
     return "${days}D ${hours}H";
   }
 
-  calculateReturnProgress() {
-    // Handle null cases
-    if (borrowedDate == null || returnDate == null) {
-      return 0.0;
-    }
+  dynamic calculateReturnProgress() {
+    if (borrowedDate == null || returnDate == null) return 0.0;
+    if (isReturned) return 1.0;
 
     final now = DateTime.now();
-    final totalDuration = returnDate!.difference(borrowedDate!);
-    final elapsedDuration = now.difference(borrowedDate!);
+    final totalDuration = returnDate!.difference(borrowedDate!).inSeconds;
+    final elapsedDuration = now.difference(borrowedDate!).inSeconds;
 
-    // Handle invalid duration
-    if (totalDuration.inSeconds <= 0) {
-      return 0.0;
-    }
+    if (totalDuration <= 0) return 0.0;
 
-    // Calculate and clamp between 0.0 and 1.0
-    final progress = elapsedDuration.inSeconds / totalDuration.inSeconds;
+    final progress = elapsedDuration / totalDuration;
     return progress.clamp(0.0, 1.0);
   }
 }

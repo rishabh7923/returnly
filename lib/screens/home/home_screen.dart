@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:libraryapp/models/borrowed_books.dart';
 import 'package:libraryapp/screens/home/widgets/book_card.dart';
+import 'package:libraryapp/screens/home/widgets/due_this_week_card.dart';
 import 'package:libraryapp/screens/scan/scan_screen.dart';
 import 'package:libraryapp/screens/book/book_detail_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,67 +16,74 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final borrowedBooksBox = Hive.box<BorrowedBooks>('borrowedBooks');
+  final PageController _dueController = PageController(viewportFraction: 0.92);
+  int _duePageIndex = 0;
+
+  Widget _buildSectionHeader(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 20,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Container(
+              height: 1,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).primaryColor.withOpacity(0.5),
+                    Theme.of(context).primaryColor.withOpacity(0.1),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _dueController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        shadowColor: const Color(0xFF5D4E37).withOpacity(0.1),
-        toolbarHeight: 80,
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundColor: Color(0xFF9E9E9E), // Grey
-              backgroundImage:
-                  Image.network(
-                    'https://avatars.githubusercontent.com/u/57840201?v=4',
-                  ).image,
-            ),
-            const SizedBox(width: 20), // Replace spacing parameter
-
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'RISHABH YADAV',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 5), // Replace spacing parameter
-                ValueListenableBuilder(
-                  valueListenable: borrowedBooksBox.listenable(),
-                  builder: (context, Box box, _) {
-                    return Text(
-                      '${box.length} books borrowed',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF424242)), // Dark grey
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            color: const Color(0xFF424242), // Dark grey
-            iconSize: 30,
-            icon: const Icon(Icons.qr_code_scanner),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ScanScreen()),
-              );
-            },
-          ),
-        ],
+        backgroundColor: Colors.transparent,
+        toolbarHeight: 0,
       ),
 
       body: ValueListenableBuilder(
         valueListenable: borrowedBooksBox.listenable(),
         builder: (context, box, _) {
-          final books = box.values.toList();
-          final keys = box.keys.toList();
+          // Build proper key-value pairs for non-returned books
+          final bookEntries = box.keys.map((key) {
+            final book = box.get(key);
+            return {'key': key, 'book': book};
+          }).where((entry) => entry['book'] != null && !(entry['book'] as BorrowedBooks).isReturned).toList();
+          
+          final books = bookEntries.map((entry) => entry['book'] as BorrowedBooks).toList();
           
           // Calculate statistics
           final now = DateTime.now();
@@ -128,6 +137,14 @@ class _HomeScreenState extends State<HomeScreen> {
             
           return CustomScrollView(
             slivers: [
+                            // Due This Week Section (with overdue alert)
+              SliverToBoxAdapter(
+                child: DueThisWeekSection(
+                  bookEntries: bookEntries,
+                  booksReturningThisWeek: booksReturningThisWeek,
+                  parentContext: context,
+                ),
+              ),
               // Calendar Heatmap Section
               SliverToBoxAdapter(
                 child: Padding(
@@ -143,6 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          
 
                           _CalendarHeatmap(books: books),
                           Row(
@@ -178,117 +196,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // Overdue Alert Section
-              if (overdueBooks.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Card(
-                      color: Colors.red[50],
-                      elevation: 1,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.red.shade300, width: 1),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.error_outline, color: Colors.red[700]),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                '${overdueBooks.length} book${overdueBooks.length > 1 ? 's' : ''} overdue! Return soon to avoid more fines.',
-                                style: TextStyle(
-                                  color: Colors.red[900],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-              // Due This Week Section
-              if (booksReturningThisWeek.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Due This Week',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF424242),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...booksReturningThisWeek.map((book) {
-                          final key = keys[books.indexOf(book)];
-                          final daysUntilReturn = book.returnDate!.difference(now).inDays;
-                          return Card(
-                            elevation: 1,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: Colors.grey.shade300, width: 1),
-                            ),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.orange[100],
-                                child: Text(
-                                  '$daysUntilReturn',
-                                  style: TextStyle(
-                                    color: Colors.orange[900],
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              title: Text(
-                                book.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Text(
-                                'Due in $daysUntilReturn day${daysUntilReturn != 1 ? 's' : ''}',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        BookDetailScreen(book: book, bookKey: key),
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      ],
-                    ),
-                  ),
-                ),
-
               // All Books Section Header
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  child: Text(
-                    'All Books',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF424242),
-                    ),
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  child: _buildSectionHeader('All Books'),
                 ),
               ),
 
@@ -296,8 +208,9 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final book = books[index];
-                    final key = keys[index];
+                    final entry = bookEntries[index];
+                    final book = entry['book'] as BorrowedBooks;
+                    final key = entry['key'];
                     
                     return BookCard(
                       book: book,

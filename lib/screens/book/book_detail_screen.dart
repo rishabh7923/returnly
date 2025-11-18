@@ -77,7 +77,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           (context) => AlertDialog(
             title: const Text('Mark as Returned'),
             content: Text(
-              'Are you sure you want to mark "${widget.book.title}" as returned? This will remove it from your borrowed books.',
+              'Are you sure you want to mark "${widget.book.title}" as returned?',
             ),
             actions: [
               TextButton(
@@ -93,7 +93,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
 
     if (confirmed == true) {
-      await borrowedBooksBox.delete(widget.bookKey);
+      widget.book.isReturned = true;
+      widget.book.returnDate = DateTime.now();
+      await borrowedBooksBox.put(widget.bookKey, widget.book);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -162,12 +164,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           // Scrollable content with bottom padding for the button
           SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                top: 16.0,
-                bottom: 100.0,
-              ),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -180,43 +177,45 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Column(
                         children: [
-                          // Book Cover (Left)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: book.customImagePath != null
-                                ? Image.file(
-                                    File(book.customImagePath!),
-                                    height: 160,
-                                    width: 120,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        const BookCoverPlaceholder(
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Book Cover (Left)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: book.customImagePath != null
+                                    ? Image.file(
+                                        File(book.customImagePath!),
+                                        height: 160,
+                                        width: 120,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            const BookCoverPlaceholder(
+                                              height: 160,
+                                              width: 120,
+                                            ),
+                                      )
+                                    : coverId != null
+                                        ? CachedNetworkImage(
+                                          imageUrl:
+                                              'https://covers.openlibrary.org/b/id/$coverId-L.jpg',
+                                          height: 160,
+                                          width: 120,
+                                          fit: BoxFit.cover,
+                                          errorWidget:
+                                              (context, url, error) =>
+                                                  const BookCoverPlaceholder(
+                                                    height: 160,
+                                                    width: 120,
+                                                  ),
+                                        )
+                                        : const BookCoverPlaceholder(
                                           height: 160,
                                           width: 120,
                                         ),
-                                  )
-                                : coverId != null
-                                    ? CachedNetworkImage(
-                                      imageUrl:
-                                          'https://covers.openlibrary.org/b/id/$coverId-L.jpg',
-                                      height: 160,
-                                      width: 120,
-                                      fit: BoxFit.cover,
-                                      errorWidget:
-                                          (context, url, error) =>
-                                              const BookCoverPlaceholder(
-                                                height: 160,
-                                                width: 120,
-                                              ),
-                                    )
-                                    : const BookCoverPlaceholder(
-                                      height: 160,
-                                      width: 120,
-                                    ),
-                          ),
+                              ),
 
                           const SizedBox(width: 15),
 
@@ -354,13 +353,110 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      // Toggle buttons - full width
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade300, width: 1),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () {
+                                  // This represents "Not Returned" - current state
+                                },
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(7),
+                                  bottomLeft: Radius.circular(7),
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.shade50,
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(7),
+                                      bottomLeft: Radius.circular(7),
+                                    ),
+                                    border: Border.all(
+                                      color: Colors.orange.shade300,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.book,
+                                        size: 18,
+                                        color: Colors.orange.shade700,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Not Returned',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.orange.shade700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: InkWell(
+                                onTap: _markAsReturned,
+                                borderRadius: const BorderRadius.only(
+                                  topRight: Radius.circular(7),
+                                  bottomRight: Radius.circular(7),
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.transparent,
+                                    borderRadius: BorderRadius.only(
+                                      topRight: Radius.circular(7),
+                                      bottomRight: Radius.circular(7),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.check,
+                                        size: 18,
+                                        color: Colors.grey.shade400,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Returned',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey.shade400,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+              ),
 
-                  const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-                  // Borrowing Details
-                  Card(
+              // Borrowing Details
+              Card(
                     elevation: 1,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

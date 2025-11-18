@@ -30,13 +30,14 @@ class BorrowedBooksAdapter extends TypeAdapter<BorrowedBooks> {
       notes: fields[10] as String?,
       borrowerName: fields[11] as String?,
       customImagePath: fields[12] as String?,
+      isReturned: fields[13] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, BorrowedBooks obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.upc)
       ..writeByte(1)
@@ -62,7 +63,9 @@ class BorrowedBooksAdapter extends TypeAdapter<BorrowedBooks> {
       ..writeByte(11)
       ..write(obj.borrowerName)
       ..writeByte(12)
-      ..write(obj.customImagePath);
+      ..write(obj.customImagePath)
+      ..writeByte(13)
+      ..write(obj.isReturned);
   }
 
   @override
