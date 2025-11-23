@@ -150,9 +150,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 ),
               );
               // Refresh the page after returning from edit
-              if (context.mounted) {
-                // ignore: use_build_context_synchronously
-                Navigator.pop(context);
+              if (mounted) {
+                setState(() {});
               }
             },
             tooltip: 'Edit Book',

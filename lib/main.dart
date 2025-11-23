@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:libraryapp/core/theme/theme.dart';
 import 'package:libraryapp/models/borrowed_books.dart';
 
-import 'package:libraryapp/screens/home/home_screen.dart';
+import 'package:libraryapp/screens/splash_screen.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  
+  // Preserve the native splash screen
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  
   await Hive.initFlutter();
   Hive.registerAdapter(BorrowedBooksAdapter());
   await Hive.openBox<BorrowedBooks>('borrowedBooks');
+
+  
   runApp(const MainApp());
 }
 
@@ -21,9 +28,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      home: const Scaffold(
-        body: HomeScreen(),
-      ),
+      home: const SplashScreen(),
     );
   }
 }

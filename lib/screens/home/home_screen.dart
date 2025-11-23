@@ -4,7 +4,6 @@ import 'package:libraryapp/models/borrowed_books.dart';
 import 'package:libraryapp/screens/home/widgets/book_card.dart';
 import 'package:libraryapp/screens/home/widgets/compact_book_card.dart';
 import 'package:libraryapp/screens/home/widgets/due_this_week_card.dart';
-import 'package:libraryapp/screens/home/all_books_screen.dart';
 import 'package:libraryapp/screens/scan/scan_screen.dart';
 import 'package:libraryapp/screens/book/book_detail_screen.dart';
 
@@ -19,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final borrowedBooksBox = Hive.box<BorrowedBooks>('borrowedBooks');
   final PageController _dueController = PageController(viewportFraction: 0.92);
-  int _duePageIndex = 0;
 
   Widget _buildSectionHeader(String title) {
     return Container(
@@ -225,12 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(child: _buildSectionHeader('Recently Added')),
-                    ],
-                  ),
+                  child: _buildSectionHeader('Recently Added'),
                 ),
               ),
 

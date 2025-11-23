@@ -33,133 +33,211 @@ class BookCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: book.customImagePath != null
-                  ? Image.file(
-                      File(book.customImagePath!),
-                      height: 130,
-                      width: 90,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => 
-                          const BookCoverPlaceholder(height: 130, width: 90),
-                    )
-                  : (book.cover_i != null)
-                      ? CachedNetworkImage(
-                          imageUrl:
-                              'https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg',
-                          height: 130,
-                          width: 90,
-                          fit: BoxFit.cover,
-                          errorWidget:
-                              (context, url, error) =>
-                                  const BookCoverPlaceholder(height: 130, width: 90),
-                        )
-                      : const BookCoverPlaceholder(height: 130, width: 90),
-            ),
-
-            const SizedBox(width: 20),
-
-            Expanded(
-              child: SizedBox(
-                height: 120,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Book details at the top
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          book.title,
-                          style: const TextStyle(
-                            fontSize: 20,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: ColorFiltered(
+                      colorFilter: book.isReturned
+                          ? const ColorFilter.matrix(<double>[
+                              0.2126, 0.7152, 0.0722, 0, 0,
+                              0.2126, 0.7152, 0.0722, 0, 0,
+                              0.2126, 0.7152, 0.0722, 0, 0,
+                              0, 0, 0, 1, 0,
+                            ])
+                          : const ColorFilter.mode(
+                              Colors.transparent,
+                              BlendMode.multiply,
+                            ),
+                      child:
+                          book.customImagePath != null
+                              ? Image.file(
+                                File(book.customImagePath!),
+                                height: 130,
+                                width: 90,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (context, error, stackTrace) =>
+                                        const BookCoverPlaceholder(
+                                          height: 130,
+                                          width: 90,
+                                        ),
+                              )
+                              : (book.cover_i != null)
+                              ? CachedNetworkImage(
+                                imageUrl:
+                                    'https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg',
+                                height: 130,
+                                width: 90,
+                                fit: BoxFit.cover,
+                                errorWidget:
+                                    (context, url, error) =>
+                                        const BookCoverPlaceholder(
+                                          height: 130,
+                                          width: 90,
+                                        ),
+                              )
+                              : const BookCoverPlaceholder(height: 130, width: 90),
+                    ),
+                  ),
+                  // Returned tag
+                  if (book.isReturned)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(4),
+                            bottomRight: Radius.circular(4),
+                          ),
+                        ),
+                        child: const Text(
+                          'RETURNED',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
                             fontWeight: FontWeight.bold,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          book.author,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  // Overdue tag
+                  if (!book.isReturned && book.returnDate != null && DateTime.now().isAfter(book.returnDate!))
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(4),
+                            bottomRight: Radius.circular(4),
                           ),
                         ),
-
-                        // Book details row
-                      ],
-                    ),
-
-                    Column(
-                      spacing: 10,
-                      children: [
-                        Builder(
-                          builder: (context) {
-                            final now = DateTime.now();
-                            final daysLate =
-                                (book.returnDate != null &&
-                                        now.isAfter(book.returnDate!))
-                                    ? now.difference(book.returnDate!).inDays
-                                    : 0;
-                            final fineAmount = daysLate * book.finePerDay;
-
-                            return Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    AttributeChip(
-                                      attribute: book.rating ?? 'N/A',
-                                      icon: Icons.star,
-                                    ),
-                                    AttributeChip(
-                                      attribute: book.pages ?? 'N/A',
-                                      icon: Icons.pages,
-                                    ),
-                                    AttributeChip(
-                                      attribute: book.publishYear ?? 'N/A',
-                                      icon: Icons.publish_rounded,
-                                    ),
-                                    AttributeChip(
-                                      attribute: book.timeLeftShort(),
-                                      icon: Icons.access_time,
-                                    ),
-                                    if (daysLate > 0)
-                                      AttributeChip(
-                                        attribute:
-                                            '${fineAmount.toStringAsFixed(2)}',
-                                        icon: Icons.payments,
-                                      ),
-                                  ],
-                                ),
-                                SizedBox(height: 5),
-                                LinearProgressIndicator(
-                                  minHeight: 5,
-                                  value: progress,
-                                  backgroundColor: Colors.grey[300],
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.grey,
-                                  ),
-                                  borderRadius: BorderRadius.circular(2.5),
-                                ),
-                              ],
-                            );
-                          },
+                        child: const Text(
+                          'OVERDUE',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ],
+                      ),
                     ),
-                  ],
+                ],
+              ),
+
+              const SizedBox(width: 20),
+
+              Expanded(
+                child: SizedBox(
+                  height: 120,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Book details at the top
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            book.title,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            book.author,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+
+                          // Book details row
+                        ],
+                      ),
+
+                      Column(
+                        spacing: 10,
+                        children: [
+                          Builder(
+                            builder: (context) {
+                              final now = DateTime.now();
+                              final isOverdue = book.returnDate != null &&
+                                  now.isAfter(book.returnDate!);
+                              final daysLate = isOverdue
+                                  ? now.difference(book.returnDate!).inDays
+                                  : 0;
+                              final fineAmount = daysLate * book.finePerDay;
+
+                              return Column(
+                                children: [
+                                  if (isOverdue)
+                                    // Show fine and days late for overdue books
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        AttributeChip(
+                                          attribute: '$daysLate ${daysLate == 1 ? 'day' : 'days'} late',
+                                          icon: Icons.event_busy,
+                                        ),
+                                        AttributeChip(
+                                          attribute:
+                                              '₹${fineAmount.toStringAsFixed(2)}',
+                                          icon: Icons.payments,
+                                        ),
+                                      ],
+                                    )
+                                  else
+                                    // Show time left and progress for non-overdue books
+                                    Column(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            AttributeChip(
+                                              attribute: book.timeLeftShort(),
+                                              icon: Icons.access_time,
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 5),
+                                        LinearProgressIndicator(
+                                          minHeight: 5,
+                                          value: progress,
+                                          backgroundColor: Colors.grey[300],
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            Colors.grey,
+                                          ),
+                                          borderRadius: BorderRadius.circular(2.5),
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );

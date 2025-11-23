@@ -8,18 +8,18 @@ import 'package:libraryapp/services/openlibrary.dart';
 import 'package:libraryapp/widgets/book_cover_placeholder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:libraryapp/screens/main_screen.dart';
 
 class AddBookScreen extends StatefulWidget {
   final String? upc;
   final BorrowedBooks? existingBook;
   final dynamic bookKey;
 
-  const AddBookScreen({
-    super.key,
-    this.upc,
-    this.existingBook,
-    this.bookKey,
-  }) : assert(upc != null || existingBook != null, 'Either upc or existingBook must be provided');
+  const AddBookScreen({super.key, this.upc, this.existingBook, this.bookKey})
+    : assert(
+        upc != null || existingBook != null,
+        'Either upc or existingBook must be provided',
+      );
 
   @override
   State<AddBookScreen> createState() => _AddBookScreenState();
@@ -71,17 +71,17 @@ class _AddBookScreenState extends State<AddBookScreen> {
       ratingController.text = book.rating ?? '';
       pagesController.text = book.pages ?? '';
       publishYearController.text = book.publishYear ?? '';
-      
+
       if (book.borrowedDate != null) {
         borrowedDateController.text =
             '${book.borrowedDate!.day}/${book.borrowedDate!.month}/${book.borrowedDate!.year}';
       }
-      
+
       if (book.returnDate != null) {
         returnDateController.text =
             '${book.returnDate!.day}/${book.returnDate!.month}/${book.returnDate!.year}';
       }
-      
+
       fineController.text = book.finePerDay.toString();
       customImagePath = book.customImagePath;
       isLoading = false;
@@ -90,7 +90,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
   void extractBookDetailsFromUPC() async {
     if (widget.upc == null) return;
-    
+
     try {
       // Set loading state
       setState(() {
@@ -108,7 +108,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
           ratingController.text = bookDetails?.rating ?? '';
           pagesController.text = bookDetails?.pages ?? '';
           publishYearController.text = bookDetails?.publishYear ?? '';
-          
+
           final now = DateTime.now();
           borrowedDateController.text = '${now.day}/${now.month}/${now.year}';
           returnDateController.text =
@@ -159,10 +159,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
           const SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -191,20 +188,23 @@ class _AddBookScreenState extends State<AddBookScreen> {
         maxHeight: 800,
         imageQuality: 85,
       );
-      
+
       if (image != null) {
         final directory = await getApplicationDocumentsDirectory();
-        final fileName = 'book_${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}';
-        final savedImage = await File(image.path).copy('${directory.path}/$fileName');
-        
+        final fileName =
+            'book_${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}';
+        final savedImage = await File(
+          image.path,
+        ).copy('${directory.path}/$fileName');
+
         setState(() {
           customImagePath = savedImage.path;
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking image: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
     }
   }
 
@@ -216,20 +216,23 @@ class _AddBookScreenState extends State<AddBookScreen> {
         maxHeight: 800,
         imageQuality: 85,
       );
-      
+
       if (image != null) {
         final directory = await getApplicationDocumentsDirectory();
-        final fileName = 'book_${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}';
-        final savedImage = await File(image.path).copy('${directory.path}/$fileName');
-        
+        final fileName =
+            'book_${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}';
+        final savedImage = await File(
+          image.path,
+        ).copy('${directory.path}/$fileName');
+
         setState(() {
           customImagePath = savedImage.path;
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error taking photo: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error taking photo: $e')));
     }
   }
 
@@ -239,88 +242,99 @@ class _AddBookScreenState extends State<AddBookScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Text(
-              'Choose Book Cover',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[800],
-              ),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.photo_library, color: Theme.of(context).primaryColor),
-              ),
-              title: const Text('Gallery'),
-              subtitle: const Text('Choose from your photos'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImageFromGallery();
-              },
-            ),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.camera_alt, color: Theme.of(context).primaryColor),
-              ),
-              title: const Text('Camera'),
-              subtitle: const Text('Take a new photo'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImageFromCamera();
-              },
-            ),
-            if (customImagePath != null)
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  child: const Icon(Icons.delete, color: Colors.red),
                 ),
-                title: const Text('Remove Custom Image'),
-                subtitle: const Text('Use default cover'),
-                onTap: () {
-                  Navigator.pop(context);
-                  setState(() {
-                    customImagePath = null;
-                  });
-                },
-              ),
-            const SizedBox(height: 10),
-          ],
-        ),
-      ),
+                Text(
+                  'Choose Book Cover',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.photo_library,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  title: const Text('Gallery'),
+                  subtitle: const Text('Choose from your photos'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImageFromGallery();
+                  },
+                ),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.camera_alt,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  title: const Text('Camera'),
+                  subtitle: const Text('Take a new photo'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImageFromCamera();
+                  },
+                ),
+                if (customImagePath != null)
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.delete, color: Colors.red),
+                    ),
+                    title: const Text('Remove Custom Image'),
+                    subtitle: const Text('Use default cover'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      setState(() {
+                        customImagePath = null;
+                      });
+                    },
+                  ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
     );
   }
 
-  InputDecoration _buildInputDecoration(String label, {String? hint, Widget? prefixIcon}) {
+  InputDecoration _buildInputDecoration(
+    String label, {
+    String? hint,
+    Widget? prefixIcon,
+  }) {
     return InputDecoration(
       labelText: label,
       hintText: hint,
@@ -349,7 +363,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditMode = widget.existingBook != null;
-    
+
     return Scaffold(
       appBar: AppBar(title: Text(isEditMode ? 'Edit Book' : 'Add Book')),
       body:
@@ -374,36 +388,52 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                     children: [
                                       Container(
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.black.withOpacity(0.1),
+                                              color: Colors.black.withOpacity(
+                                                0.1,
+                                              ),
                                               blurRadius: 8,
                                               offset: const Offset(0, 2),
                                             ),
                                           ],
                                         ),
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(10),
-                                          child: customImagePath != null
-                                              ? Image.file(
-                                                  File(customImagePath!),
-                                                  height: 120,
-                                                  width: 85,
-                                                  fit: BoxFit.cover,
-                                                )
-                                              : (bookDetails?.cover_i ?? widget.existingBook?.cover_i) != null
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          child:
+                                              customImagePath != null
+                                                  ? Image.file(
+                                                    File(customImagePath!),
+                                                    height: 120,
+                                                    width: 85,
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                  : (bookDetails?.cover_i ??
+                                                          widget
+                                                              .existingBook
+                                                              ?.cover_i) !=
+                                                      null
                                                   ? Image.network(
-                                                      'https://covers.openlibrary.org/b/id/${bookDetails?.cover_i ?? widget.existingBook!.cover_i}-M.jpg',
-                                                      height: 120,
-                                                      width: 85,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (ctx, err, stack) => const BookCoverPlaceholder(height: 120, width: 85),
-                                                    )
+                                                    'https://covers.openlibrary.org/b/id/${bookDetails?.cover_i ?? widget.existingBook!.cover_i}-M.jpg',
+                                                    height: 120,
+                                                    width: 85,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder:
+                                                        (ctx, err, stack) =>
+                                                            const BookCoverPlaceholder(
+                                                              height: 120,
+                                                              width: 85,
+                                                            ),
+                                                  )
                                                   : const BookCoverPlaceholder(
-                                                      height: 120,
-                                                      width: 85,
-                                                    ),
+                                                    height: 120,
+                                                    width: 85,
+                                                  ),
                                         ),
                                       ),
                                       Positioned(
@@ -412,14 +442,20 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                         child: Container(
                                           padding: const EdgeInsets.all(6),
                                           decoration: BoxDecoration(
-                                            color: Theme.of(context).primaryColor,
-                                            borderRadius: const BorderRadius.only(
-                                              topLeft: Radius.circular(8),
-                                              bottomRight: Radius.circular(10),
-                                            ),
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            borderRadius:
+                                                const BorderRadius.only(
+                                                  topLeft: Radius.circular(8),
+                                                  bottomRight: Radius.circular(
+                                                    10,
+                                                  ),
+                                                ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.black.withOpacity(0.2),
+                                                color: Colors.black.withOpacity(
+                                                  0.2,
+                                                ),
                                                 blurRadius: 4,
                                                 offset: const Offset(0, 1),
                                               ),
@@ -444,7 +480,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                         controller: titleController,
                                         decoration: _buildInputDecoration(
                                           'Title',
-                                          prefixIcon: const Icon(Icons.book, size: 18),
+                                          prefixIcon: const Icon(
+                                            Icons.book,
+                                            size: 18,
+                                          ),
                                         ),
                                         style: const TextStyle(fontSize: 14),
                                       ),
@@ -453,7 +492,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                         controller: authorController,
                                         decoration: _buildInputDecoration(
                                           'Author',
-                                          prefixIcon: const Icon(Icons.person, size: 18),
+                                          prefixIcon: const Icon(
+                                            Icons.person,
+                                            size: 18,
+                                          ),
                                         ),
                                         style: const TextStyle(fontSize: 14),
                                       ),
@@ -484,7 +526,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
                               decoration: _buildInputDecoration(
                                 'Borrowed from',
                                 hint: 'Enter person name',
-                                prefixIcon: const Icon(Icons.person_outline, size: 18),
+                                prefixIcon: const Icon(
+                                  Icons.person_outline,
+                                  size: 18,
+                                ),
                               ),
                               style: const TextStyle(fontSize: 14),
                             ),
@@ -499,16 +544,20 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                     readOnly: true,
                                     decoration: _buildInputDecoration(
                                       'Borrowed Date',
-                                      prefixIcon: const Icon(Icons.calendar_today, size: 16),
+                                      prefixIcon: const Icon(
+                                        Icons.calendar_today,
+                                        size: 16,
+                                      ),
                                     ),
                                     style: const TextStyle(fontSize: 14),
                                     onTap: () async {
-                                      DateTime? pickedDate = await showDatePicker(
-                                        context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime(2000),
-                                        lastDate: DateTime.now(),
-                                      );
+                                      DateTime? pickedDate =
+                                          await showDatePicker(
+                                            context: context,
+                                            initialDate: DateTime.now(),
+                                            firstDate: DateTime(2000),
+                                            lastDate: DateTime.now(),
+                                          );
 
                                       if (pickedDate != null) {
                                         setState(() {
@@ -526,16 +575,20 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                     readOnly: true,
                                     decoration: _buildInputDecoration(
                                       'Return Date',
-                                      prefixIcon: const Icon(Icons.event_available, size: 16),
+                                      prefixIcon: const Icon(
+                                        Icons.event_available,
+                                        size: 16,
+                                      ),
                                     ),
                                     style: const TextStyle(fontSize: 14),
                                     onTap: () async {
-                                      DateTime? pickedDate = await showDatePicker(
-                                        context: context,
-                                        initialDate: defaultReturnDate,
-                                        firstDate: DateTime.now(),
-                                        lastDate: DateTime(2100),
-                                      );
+                                      DateTime? pickedDate =
+                                          await showDatePicker(
+                                            context: context,
+                                            initialDate: defaultReturnDate,
+                                            firstDate: DateTime.now(),
+                                            lastDate: DateTime(2100),
+                                          );
 
                                       if (pickedDate != null) {
                                         setState(() {
@@ -554,11 +607,16 @@ class _AddBookScreenState extends State<AddBookScreen> {
                             TextField(
                               controller: fineController,
                               keyboardType:
-                                  const TextInputType.numberWithOptions(decimal: true),
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
                               decoration: _buildInputDecoration(
                                 'Fine per day',
                                 hint: 'e.g. 5.0',
-                                prefixIcon: const Icon(Icons.attach_money, size: 18),
+                                prefixIcon: const Icon(
+                                  Icons.attach_money,
+                                  size: 18,
+                                ),
                               ),
                               style: const TextStyle(fontSize: 14),
                             ),
@@ -573,11 +631,17 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                 Expanded(
                                   child: TextField(
                                     controller: ratingController,
-                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
                                     decoration: _buildInputDecoration(
                                       'Rating',
                                       hint: '4.5',
-                                      prefixIcon: const Icon(Icons.star_outline, size: 18),
+                                      prefixIcon: const Icon(
+                                        Icons.star_outline,
+                                        size: 18,
+                                      ),
                                     ),
                                     style: const TextStyle(fontSize: 14),
                                   ),
@@ -590,7 +654,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                     decoration: _buildInputDecoration(
                                       'Pages',
                                       hint: '320',
-                                      prefixIcon: const Icon(Icons.menu_book, size: 18),
+                                      prefixIcon: const Icon(
+                                        Icons.menu_book,
+                                        size: 18,
+                                      ),
                                     ),
                                     style: const TextStyle(fontSize: 14),
                                   ),
@@ -603,7 +670,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                     decoration: _buildInputDecoration(
                                       'Year',
                                       hint: '2020',
-                                      prefixIcon: const Icon(Icons.date_range, size: 18),
+                                      prefixIcon: const Icon(
+                                        Icons.date_range,
+                                        size: 18,
+                                      ),
                                     ),
                                     style: const TextStyle(fontSize: 14),
                                   ),
@@ -620,8 +690,12 @@ class _AddBookScreenState extends State<AddBookScreen> {
                               controller: notesController,
                               decoration: _buildInputDecoration(
                                 'Additional notes',
-                                hint: 'Any additional information about the book',
-                                prefixIcon: const Icon(Icons.note_outlined, size: 18),
+                                hint:
+                                    'Any additional information about the book',
+                                prefixIcon: const Icon(
+                                  Icons.note_outlined,
+                                  size: 18,
+                                ),
                               ),
                               style: const TextStyle(fontSize: 14),
                               maxLines: 3,
@@ -655,7 +729,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                 // Parse borrowed date
                                 DateTime? borrowedDate;
                                 if (borrowedDateController.text.isNotEmpty) {
-                                  final borrowedParts = borrowedDateController.text.split('/');
+                                  final borrowedParts = borrowedDateController
+                                      .text
+                                      .split('/');
                                   borrowedDate = DateTime(
                                     int.parse(borrowedParts[2]),
                                     int.parse(borrowedParts[1]),
@@ -664,13 +740,15 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                 }
 
                                 // Parse the return date from controller text
-                                final dateParts = returnDateController.text.split('/');
+                                final dateParts = returnDateController.text
+                                    .split('/');
                                 final day = int.parse(dateParts[0]);
                                 final month = int.parse(dateParts[1]);
                                 final year = int.parse(dateParts[2]);
                                 final returnDate = DateTime(year, month, day);
-                                
-                                final parsedFine = double.tryParse(fineController.text) ?? 0.0;
+
+                                final parsedFine =
+                                    double.tryParse(fineController.text) ?? 0.0;
 
                                 if (isEditMode) {
                                   // Update existing book
@@ -681,36 +759,73 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                   book.borrowedDate = borrowedDate;
                                   book.returnDate = returnDate;
                                   book.finePerDay = parsedFine;
-                                  book.rating = ratingController.text.isNotEmpty ? ratingController.text : null;
-                                  book.pages = pagesController.text.isNotEmpty ? pagesController.text : null;
-                                  book.publishYear = publishYearController.text.isNotEmpty ? publishYearController.text : null;
+                                  book.rating =
+                                      ratingController.text.isNotEmpty
+                                          ? ratingController.text
+                                          : null;
+                                  book.pages =
+                                      pagesController.text.isNotEmpty
+                                          ? pagesController.text
+                                          : null;
+                                  book.publishYear =
+                                      publishYearController.text.isNotEmpty
+                                          ? publishYearController.text
+                                          : null;
                                   book.notes = notesController.text;
-                                  book.borrowerName = borrowerController.text.isNotEmpty ? borrowerController.text : null;
+                                  book.borrowerName =
+                                      borrowerController.text.isNotEmpty
+                                          ? borrowerController.text
+                                          : null;
                                   book.customImagePath = customImagePath;
-                                  
-                                  await borrowedBooksBox.put(widget.bookKey, book);
+
+                                  await borrowedBooksBox.put(
+                                    widget.bookKey,
+                                    book,
+                                  );
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Book updated successfully'),
+                                      content: Text(
+                                        'Book updated successfully',
+                                      ),
                                     ),
                                   );
                                 } else {
                                   // Add new book
                                   await borrowedBooksBox.add(
                                     BorrowedBooks(
-                                      upc: upcController.text.isNotEmpty ? upcController.text : widget.upc!,
+                                      upc:
+                                          upcController.text.isNotEmpty
+                                              ? upcController.text
+                                              : widget.upc!,
                                       title: titleController.text,
                                       author: authorController.text,
-                                      rating: ratingController.text.isNotEmpty ? ratingController.text : (bookDetails?.rating ?? '0'),
+                                      rating:
+                                          ratingController.text.isNotEmpty
+                                              ? ratingController.text
+                                              : (bookDetails?.rating ?? '0'),
                                       cover_i: bookDetails?.cover_i,
-                                      pages: pagesController.text.isNotEmpty ? pagesController.text : (bookDetails?.pages ?? '0'),
-                                      publishYear: publishYearController.text.isNotEmpty ? publishYearController.text : (bookDetails?.publishYear ?? 'N/A'),
-                                      borrowedDate: borrowedDate ?? DateTime.now(),
+                                      pages:
+                                          pagesController.text.isNotEmpty
+                                              ? pagesController.text
+                                              : (bookDetails?.pages ?? '0'),
+                                      publishYear:
+                                          publishYearController.text.isNotEmpty
+                                              ? publishYearController.text
+                                              : (bookDetails?.publishYear ??
+                                                  'N/A'),
+                                      borrowedDate:
+                                          borrowedDate ?? DateTime.now(),
                                       returnDate: returnDate,
                                       finePerDay: parsedFine,
-                                      notes: notesController.text.isNotEmpty ? notesController.text : bookDetails?.description,
-                                      borrowerName: borrowerController.text.isNotEmpty ? borrowerController.text : null,
+                                      notes:
+                                          notesController.text.isNotEmpty
+                                              ? notesController.text
+                                              : bookDetails?.description,
+                                      borrowerName:
+                                          borrowerController.text.isNotEmpty
+                                              ? borrowerController.text
+                                              : null,
                                       customImagePath: customImagePath,
                                     ),
                                   );
@@ -722,7 +837,20 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                   );
                                 }
 
+                                // Pop once for AddBookScreen
                                 Navigator.pop(context);
+
+                                if (!isEditMode) {
+                                  // Pop again only if we are in 'add' mode (from scan screen)
+                                  Navigator.pop(context);
+                                }
+
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (context) => const MainScreen(),
+                                  ),
+                                  (Route<dynamic> route) => false,
+                                );
                               }
                               : null,
                       style: ElevatedButton.styleFrom(
@@ -739,7 +867,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
                           const SizedBox(width: 8),
                           Text(
                             isEditMode ? 'Save Changes' : 'Add Book',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),

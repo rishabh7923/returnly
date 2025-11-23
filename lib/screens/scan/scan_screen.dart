@@ -96,17 +96,21 @@ class _ScanScreenState extends State<ScanScreen> with SingleTickerProviderStateM
 
                   if (barcode.rawValue != null && barcode.rawValue!.isNotEmpty) {
                     await _showSuccessAnimation();
-                    
-                    controller.dispose();
 
                     if (mounted) {
-                      Navigator.pop(context);
-                      Navigator.push(
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => AddBookScreen(upc: barcode.rawValue!),
                         ),
                       );
+                    }
+
+                    // Reset processing state when returning to scanner
+                    if (mounted) {
+                      setState(() {
+                        _isProcessing = false;
+                      });
                     }
                   }
                 }
